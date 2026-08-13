@@ -42,7 +42,7 @@ A aplicação conta com uma interface futurista baseada em **Dark Glassmorphism*
 ## 📁 Estrutura de Arquivos do Projeto
 
 ```text
-testereact/
+projeto_horario/
 ├── api/                          # Backend API RESTful em Python
 │   ├── db/                       # Banco de dados SQLite (criado em runtime)
 │   │   └── landing.db            # Arquivo da base de dados local
@@ -82,8 +82,9 @@ testereact/
 │   └── package.json              # Dependências do React e scripts Vite
 │
 ├── doc/                          # Documentação técnica do projeto
-│   ├── plano_landingpage_python.md   # Especificação técnica oficial da arquitetura Python
-│   └── plano_landingpage_nodejs.md   # Documentação de referência da versão legada em Node.js
+│   ├── escopo_do_projeto.md      # Escopo, objetivos e delimitações do projeto
+│   ├── requisitos_usuario.md     # Requisitos funcionais e não funcionais coletados
+│   └── plano_projeto.md          # Plano de projeto, cronograma e riscos
 │
 ├── .gitignore                    # Arquivos ignorados pelo Git (.venv, node_modules, dist, db)
 └── README.md                     # Documentação oficial do projeto
@@ -190,12 +191,61 @@ Caso ocorra erro de porta ocupada (3000 / 5173):
 |---|---|---|
 | `GET` | `/` | Servidor estático da aplicação React (`frontend/dist`) |
 | `GET` | `/api/health` | Health Check do servidor Python (`{"sucesso": true, "mensagem": "API funcionando!"}`) |
-| `POST` | `/api/leads` | Cadastrar novo lead no banco SQLite |
-| `GET` | `/api/leads` | Listar leads cadastrados no SQLite (`pagina`, `limite`) |
+| `POST` | `/api/leads` | Cadastrar novo lead no banco SQLite (validação e sanitização XSS inclusas) |
+| `GET` | `/api/leads` | Listar leads cadastrados no SQLite com paginação (`pagina`, `limite`) |
+
+### Regras de Validação (Backend)
+
+| Campo | Regra |
+|---|---|
+| `nome_completo` | Obrigatório, de 3 a 150 caracteres (sanitizado com `html.escape`) |
+| `email` | Obrigatório, formato válido via regex (sanitizado) |
+| `telefone_whatsapp` | Obrigatório, de 10 a 15 dígitos com DDD (somente números são gravados) |
+| `mensagem` | Opcional, no máximo 500 caracteres (sanitizada) |
+
+Quando a validação falha, o servidor responde **HTTP 422** com a lista de `erros`. No sucesso, responde **HTTP 201** com `{"sucesso": true, ...}`.
+
+### Formato de Resposta — `GET /api/leads`
+
+```json
+{
+  "sucesso": true,
+  "dados": [
+    {
+      "id": 13,
+      "nome_completo": "Maria da Silva",
+      "email": "maria@exemplo.com",
+      "telefone_whatsapp": "66999990000",
+      "mensagem": "Quero mais informações do curso",
+      "data_cadastro": "2026-08-13 08:25:38",
+      "status_atendimento": "novo"
+    }
+  ],
+  "total": 12,
+  "pagina": 1,
+  "limite": 10
+}
+```
+
+### Esquema do Banco de Dados (SQLite)
+
+Tabela `leads` criada por `api/iniciar_banco.py` no arquivo `api/db/landing.db`, com `PRAGMA journal_mode = WAL` e `row_factory = dict`:
+
+| Coluna | Tipo | Observações |
+|---|---|---|
+| `id` | `INTEGER PRIMARY KEY AUTOINCREMENT` | Identificador único |
+| `nome_completo` | `TEXT NOT NULL` | Nome sanitizado do lead |
+| `email` | `TEXT NOT NULL` | Índice `idx_leads_email` |
+| `telefone_whatsapp` | `TEXT NOT NULL` | Somente dígitos (DDD + número) |
+| `mensagem` | `TEXT DEFAULT NULL` | Mensagem opcional |
+| `data_cadastro` | `TEXT DEFAULT (datetime('now','localtime'))` | Data/hora local automaticamente gravada |
+| `status_atendimento` | `TEXT DEFAULT 'novo'` | Fila de atendimento: `novo`, `contatado`, `convertido`, `perdido` (índice `idx_leads_status`) |
+
+> A coluna `status_atendimento` permite acompanhar a evolução do funil de atendimento diretamente no banco, além da listagem paginada para o modal `ModalLeads.jsx`.
 
 ---
 
 ## 📜 Licença e Créditos
 
 Projeto desenvolvido com fins acadêmicos e educacionais. Repositório oficial no GitHub:
-🔗 [https://github.com/carlosdavidr-eng/testepython.git](https://github.com/carlosdavidr-eng/testepython.git)
+🔗 [https://github.com/guidazxy/Projeto-Horario.git](https://github.com/guidazxy/Projeto-Horario.git)
