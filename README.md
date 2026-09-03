@@ -1,8 +1,17 @@
-# 🎓 Sistema Acadêmico de Captura de Leads — React 18 + Python (FastAPI) + SQLite
+# 🎓 Projeto Horario — Sistema de Gestão de Horários Escolares
+
+## Instituto Federal de Mato Grosso — Campus de Barra do Garças (IFMT)
+
+**Disciplina:** Programação Web  
+**Turma:** Terceiro Ano B — Ano 2026  
+**Acadêmicos:** Carlos Alexandre Dias da Silva e Lara Guida Carvalho  
+**Professor:** Carlos David Rocha de Souza
+
+---
+
+## Sobre o Projeto
 
 > **Projeto Acadêmico Full Stack:** Aplicação moderna baseada em componentes reativos em **React 18 (Vite + Tailwind CSS)** com estética **Dark Glassmorphic** e API RESTful robusta de alta performance em **Python 3 (FastAPI + Uvicorn)** com banco de dados **SQLite**.
->
-> **Status atual (27/08/2026):** Plano de projeto (`doc/plano_projeto.md`) **executado e validado** — todos os marcos M1–M4 atingidos. Backend corrigido para `landing.db`, frontend em build de produção (`170.91 kB / 53.11 kB gzip`) e integração E2E testada (HTTP 201/422, sanitização XSS, WAL, fallback SPA).
 
 ---
 
@@ -327,7 +336,12 @@ Validado na execução do plano:
 
 ## 📜 Licença e Créditos
 
-Projeto desenvolvido com fins acadêmicos e educacionais. Repositório oficial no GitHub:
-🔗 [https://github.com/guidazxy/Projeto-Horario.git](https://github.com/guidazxy/Projeto-Horario.git)
+Projeto acadêmico desenvolvido no curso de Programação Web do **Instituto Federal de Mato Grosso — Campus de Barra do Garças (IFMT)**.
+
+**Acadêmicos:** Carlos Alexandre Dias da Silva e Lara Guida Carvalho  
+**Professor:** Carlos David Rocha de Souza
+
+Repositório oficial no GitHub:
+🔗 [https://github.com/guidazxy/Projeto-Horario](https://github.com/guidazxy/Projeto-Horario)
 
 > **Manutenção:** Qualquer alteração de stack deve atualizar simultaneamente `README.md`, `doc/requisitos_usuario.md` e `doc/plano_projeto.md` (ver nota em `plano_projeto.md:318`).
