@@ -11,7 +11,7 @@ def obter_conexao():
     caminho_base = os.path.dirname(os.path.abspath(__file__))
     pasta_db = os.path.abspath(os.path.join(caminho_base, '../../db'))
     os.makedirs(pasta_db, exist_ok=True)
-    caminho_banco = os.path.join(pasta_db, 'landing.db')
+    caminho_banco = os.path.join(pasta_db, 'horario_escolar.db')
 
     conexao = sqlite3.connect(caminho_banco)
     conexao.row_factory = dict_factory
