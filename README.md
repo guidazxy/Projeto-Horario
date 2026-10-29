@@ -13,7 +13,7 @@
 
 Sistema acadêmico full stack para **gestão de horários escolares**, desenvolvido com **React 18 (Vite + Tailwind CSS)** no frontend e **Python 3 (FastAPI + Uvicorn)** no backend, utilizando **SQLite** como banco de dados relacional.
 
-O sistema permite o cadastro e gerenciamento de cursos, turmas, professores, matérias, salas, horários e alocações de horários, além de um formulário de captação de leads e sistema de autenticação.
+O sistema permite o cadastro e gerenciamento de cursos, turmas, professores, matérias, salas, horários e alocações de horários, além de um formulário de captação de leads e sistema de autenticação. Inclui recursos avançados de detecção de conflitos, validação de dados em tempo real e interface diferenciada por perfil de usuário.
 
 ---
 
@@ -34,6 +34,145 @@ O sistema permite o cadastro e gerenciamento de cursos, turmas, professores, mat
 
 ---
 
+## Funcionalidades do Backend
+
+### Endpoints da API
+
+#### Rotas Autenticadas (`/api/auth`)
+
+| Método | Rota | Descrição | Status |
+|--------|------|-----------|--------|
+| `POST` | `/login` | Autenticação de usuário — valida email, senha e perfil contra tabela `professores` | 200 / 401 |
+| `GET` | `/status` | Verificar status de autenticação — retorna status de login | 200 |
+
+#### Rotas de Leads (`/api`)
+
+| Método | Rota | Descrição | Status |
+|--------|------|-----------|--------|
+| `POST` | `/leads` | Cadastrar novo lead — validação completa com sanitização XSS | 201 / 422 |
+| `GET` | `/leads?pagina=1&limite=20` | Listar leads com paginação | 200 |
+
+#### Rotas de Recursos Completo (via Controladores)
+
+As seguintes rotas estão implementadas nos controladores, podendo ser registradas conforme necessidade:
+
+| Método | Rota | Controlador | Descrição |
+|--------|------|-------------|-----------|
+| `GET` | `/materias` | `materia_controlador` | Listar todas as matérias |
+| `POST` | `/materias` | `materia_controlador` | Cadastrar nova matéria |
+| `DELETE` | `/materias` | `materia_controlador` | Remover matéria |
+| `GET` | `/professores` | `materia_controlador` | Listar todos os professores |
+| `POST` | `/professores` | `materia_controlador` | Cadastrar novo professor |
+| `DELETE` | `/professores` | `materia_controlador` | Remover professor |
+| `GET` | `/salas` | `sala_controlador` | Listar todas as salas |
+| `POST` | `/salas` | `sala_controlador` | Cadastrar nova sala/laboratório |
+| `DELETE` | `/salas` | `sala_controlador` | Remover sala |
+| `GET` | `/horarios` | `sala_controlador` | Listar todos os slots de horário |
+| `POST` | `/horarios` | `sala_controlador` | Cadastrar novo slot de horário |
+| `DELETE` | `/horarios` | `sala_controlador` | Remover horário |
+| `GET` | `/turmas` | `turma_controlador` | Listar todas as turmas com curso |
+| `POST` | `/turmas` | `turma_controlador` | Cadastrar nova turma |
+| `DELETE` | `/turmas` | `turma_controlador` | Remover turma |
+| `GET` | `/turma-materia` | `turma_materia_controlador` | Listar relações turma-matéria |
+| `POST` | `/turma-materia` | `turma_materia_controlador` | Cadastrar relação turma-matéria |
+| `DELETE` | `/turma-materia` | `turma_materia_controlador` | Remover relação |
+| `GET` | `/horarios-alocados` | `horarios_alocados_controlador` | Listar todas as alocações de horário |
+| `POST` | `/horarios-alocados` | `horarios_alocados_controlador` | Cadastrar nova alocação de horário |
+| `DELETE` | `/horarios-alocados` | `horarios_alocados_controlador` | Remover alocação |
+| `GET` | `/restricoes` | `restricoes_controlador` | Listar todas as restrições |
+
+#### Endpoint de Health Check
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET` | `/api/health` | Health check do servidor — retorna `{"sucesso": true, "mensagem": "API de gestão de horários funcionando!"}` |
+
+#### Endpoint Raiz (modo desenvolvimento)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET` | `/` | Retorna `{"status": "API de Gestão Escolar Ativa"}` — modo simulação com dados iniciais |
+
+---
+
+### Validações (Backend)
+
+Todos os dados passam por validação rigorosa no backend via `api/src/utilitarios/validadores.py`:
+
+| Campo | Regra de Validação | Sanitização |
+|-------|-------------------|-------------|
+| `nome_completo` | Obrigatório, 3–150 caracteres | `html.escape` + `strip()` |
+| `email` | Obrigatório, formato regex válido | `html.escape` |
+| `telefone_whatsapp` | Obrigatório, 10–15 dígitos | Somente dígitos (regex `re.sub(r'\D', '', telefone)`) |
+| `mensagem` | Opcional, máximo 500 caracteres | `html.escape` |
+
+Funções de validação específicas:
+- `validar_nome()` — valida comprimento e limpeza de nomes
+- `validar_carga_horaria()` — valida número inteiro não negativo
+- `validar_dia_semana()` — valida dias da semana (Segunda a Domingo)
+- `validar_horario()` — valida formato HH:MM em 24h
+- `validar_lead()` — validação completa de lead com todas as regras acima
+
+#### Segurança Implementada
+
+- **Sanitização XSS:** Todos os inputs passam por `html.escape` antes de serem armazenados
+- **Prepared Statements:** Queries SQLite utilizam placeholders `?` para prevenção de SQL injection
+- **WAL Mode:** Write-Ahead Logging ativo para leituras concorrentes via `PRAGMA journal_mode = WAL`
+- **Foreign Keys:** Integridade referencial ativa via `PRAGMA foreign_keys = ON`
+- **CORS:** Controle de requisições Cross-Origin configurável via `.env` (`ORIGEM_PERMITIDA`)
+- **Validação de dados:** Validação completa no backend antes de qualquer operação de banco de dados
+
+---
+
+## Funcionalidades do Frontend
+
+### Componentes React
+
+| Componente | Descrição |
+|------------|-----------|
+| `App.jsx` | Componente raiz — gerencia autenticação, perfis (Funcionário/Aluno), fetch de turmas/horários, alocação de horários com detecção de conflitos, contém telas de login/cadastro e tabela de horários filtráveis |
+| `Login.jsx` | Tela de login com seleção de perfil (funcionário/aluno) — valida credenciais e mantém estado de autenticação |
+| `Header.jsx` | Navbar fixa com logo "AcademiStack", navegação (Arquitetura, Testar API), botão de leads (🗄️ Ver Leads Gravados) e teste de API Python (🐍) |
+| `Hero.jsx` | Banner principal com gradientes orbitais, display interativo de código (Python vs React), tabs de troca de código, indicador de status "STATUS 200 OK" |
+| `Beneficios.jsx` | Seção "Arquitetura da Aplicacao" com 4 cards pilar: Backend Python/FastAPI, Frontend React/Vite, SQLite/WAL Mode, Security/Validation — com efeitos de hover |
+| `FormularioLead.jsx` | Formulário de captação com máscara de telefone em tempo real `(xx) xxxxx-xxxx`, validação client-side, POST assíncrono ao backend, notificações de sucesso/erro |
+| `ModalLeads.jsx` | Modal dialog com tabela de leads em tempo real do SQLite, atualização manual, colunas: ID, Nome, E-mail, WhatsApp, Data Cadastro, Status de atendimento |
+| `Toast.jsx` | Notificação flutuante — auto-dismiss após 4s, verde para sucesso, vermelho para erro |
+| `Footer.jsx` | Rodapé com "AcademiStack Full Stack", badges de tech stack (Python/FastAPI, React/Vite, SQLite), botão para visualizar leads SQLite |
+
+### Funcionalidades Principais do Frontend
+
+#### Sistema de Autenticação
+- Estado `autenticado` gerenciado com `useState` + `useEffect`
+- Persistência de login across refreshes
+- Duas profiles disponíveis: `Funcionário` e `Aluno`
+- Tela diferente baseada no perfil logado
+- Botão de "Sair" que retorna à tela de login
+
+#### Dashboard de Funcionário
+- Interface de alocação de disciplinas e professores na grade
+- **Detecção de conflitos:** Impede professor ou sala double-booking ao cadastrar horário
+- Formulário com campos: dia da semana, disciplina, professor, sala
+- Feedback visual: `✅ Horário alocado com sucesso (Sem conflitos)!` ou `⚠️ Erro: conflito detectado`
+- Filtro de busca em tempo real por disciplina, professor ou sala
+- Tabela responsiva da grade de aulas por dia da semana
+
+#### Formulário de Lead com Máscara
+- Máscara dinâmica de telefone WhatsApp: `(xx) xxxxx-xxxx`
+- Atualização em tempo real enquanto digita
+- Validação de campos (nome: 3–150 chars, email: regex, telefone: 10–15 dígitos)
+- Envio assíncrono POST para `/api/leads`
+- Notificações de sucesso/error via componente Toast
+- Botão para abrir modal e ver leads cadastrados
+
+#### Integração com API
+- Proxy Vite: `/api` → `http://localhost:3000` (configurado no `vite.config.js`)
+- Requisições assíncronas `fetch()` para todos os endpoints
+- Tratamento de erros com mensagens amigáveis
+- Loading state durante requisições
+
+---
+
 ## Estrutura do Projeto
 
 ```
@@ -47,7 +186,7 @@ projeto_horario/
 │   │   ├── config/
 │   │   │   └── conexao_banco.py        # Conexão SQLite (dict_factory, WAL, foreign_keys)
 │   │   ├── controladores/
-│   │   │   ├── lead_controlador.py     # CRUD de leads
+│   │   │   ├── lead_controlador.py     # CRUD de leads com validação
 │   │   │   ├── materia_controlador.py  # CRUD de matérias e professores
 │   │   │   ├── professor_materia_controlador.py  # Relação N:N professor-matéria
 │   │   │   ├── restricoes_controlador.py  # Restrições de alocação
@@ -57,26 +196,26 @@ projeto_horario/
 │   │   │   └── horarios_alocados_controlador.py  # Alocação de horários
 │   │   ├── rotas/
 │   │   │   ├── __init__.py
-│   │   │   ├── auth_rotas.py           # Rotas de autenticação
-│   │   │   └── lead_rotas.py           # Rotas de leads
+│   │   │   ├── auth_rotas.py           # Rotas de autenticação (login, status)
+│   │   │   └── lead_rotas.py           # Rotas de leads (criar, listar)
 │   │   └── utilitarios/
 │   │       └── validadores.py          # Validação e sanitização de dados
 │   ├── .env                            # Variáveis de ambiente (não versionado)
 │   ├── iniciar_banco.py                # Script de criação do banco de dados
-│   ├── main.py                         # Ponto de entrada do servidor
+│   ├── main.py                         # Ponto de entrada do servidor (modo desenvolvimento com conflitos)
 │   └── requirements.txt                # Dependências Python
 │
 ├── frontend/                           # Frontend React
 │   ├── src/
 │   │   ├── main.jsx                    # Ponto de entrada do React
-│   │   ├── App.jsx                     # Componente raiz (autenticação, rotas)
+│   │   ├── App.jsx                     # Componente raiz (autenticação, rotas, dashboard)
 │   │   ├── index.css                   # Estilos globais e animações
 │   │   └── components/
 │   │       ├── Header.jsx              # Navbar com logo e botões
-│   │       ├── Hero.jsx                # Banner principal
-│   │       ├── Beneficios.jsx          # Cards de benefícios
-│   │       ├── FormularioLead.jsx      # Formulário de captação de leads
-│   │       ├── ModalLeads.jsx          # Modal de listagem de leads
+│   │       ├── Hero.jsx                # Banner principal com visualizador de código interativo
+│   │       ├── Beneficios.jsx          # Cards de benefícios/arquitetura
+│   │       ├── FormularioLead.jsx      # Formulário de captação de leads com máscara
+│   │       ├── ModalLeads.jsx          # Modal de listagem de leads em tempo real
 │   │       ├── Login.jsx               # Tela de autenticação
 │   │       ├── Toast.jsx               # Notificações flutuantes
 │   │       └── Footer.jsx              # Rodapé
@@ -99,7 +238,7 @@ projeto_horario/
 
 ## Banco de Dados (SQLite)
 
-Banco de dados relacional com **10 tabelas** e **9 índices** para performance. Criado automaticamente via `api/iniciar_banco.py` na primeira execução.
+Banco de dados relacional com **10 tabelas** e **9 índices** para performance. Criado automaticamente via `api/iniciar_banco.py` na primeira execução. Utiliza **WAL Mode** (Write-Ahead Logging) e **Foreign Keys** ativos para integridade de dados.
 
 ### Diagrama de Tabelas
 
@@ -113,7 +252,7 @@ Banco de dados relacional com **10 tabelas** e **9 índices** para performance. 
 | `salas` | Salas de aula com capacidade e tipo |
 | `horarios` | Slots de horário (dia da semana + hora início/fim) |
 | `turma_materia` | Relação N:N entre turmas e matérias (com professor) |
-| `horarios_alocados` | Alocações de horários por turma-matéria-sala |
+| `horarios_alocados` | Alocações de horário por turma-matéria-sala |
 | `restricoes` | Restrições de alocação (professor, sala, turma) |
 | `leads` | Formulário de captação de contatos |
 
@@ -227,40 +366,37 @@ idx_horarios_alocados_status        ON horarios_alocados(status)
 
 ---
 
-## Endpoints da API
+## Endpoints da API (Resumo Consolidado)
 
-| Método | Rota | Descrição | Status |
-|--------|------|-----------|--------|
-| `GET` | `/api/health` | Health check do servidor | 200 |
-| `POST` | `/api/auth/login` | Autenticação de usuário | 200 / 401 |
-| `GET` | `/api/auth/status` | Verificar status de autenticação | 200 |
-| `POST` | `/api/leads` | Cadastrar novo lead | 201 / 422 |
-| `GET` | `/api/leads` | Listar leads (paginação: `pagina`, `limite`) | 200 |
-
-### Validações (Backend)
-
-| Campo | Regra | Sanitização |
-|-------|-------|-------------|
-| `nome_completo` | Obrigatório, 3–150 caracteres | `html.escape` + `strip()` |
-| `email` | Obrigatório, formato válido | `html.escape` |
-| `telefone_whatsapp` | Obrigatório, 10–15 dígitos | Somente dígitos |
-| `mensagem` | Opcional, máx. 500 caracteres | `html.escape` |
-
----
-
-## Componentes React
-
-| Componente | Descrição |
-|------------|-----------|
-| `App.jsx` | Componente raiz — gerencia autenticação e rotas |
-| `Login.jsx` | Tela de login com seleção de perfil (funcionário/aluno) |
-| `Header.jsx` | Navbar fixa com logo e botões de ação |
-| `Hero.jsx` | Banner principal com visualizador de código interativo |
-| `Beneficios.jsx` | Cards descritivos da arquitetura |
-| `FormularioLead.jsx` | Formulário de captação com máscara de telefone |
-| `ModalLeads.jsx` | Modal com listagem de leads em tempo real |
-| `Toast.jsx` | Notificação flutuante (auto-dismiss 4s) |
-| `Footer.jsx` | Rodapé com informações do projeto |
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET` | `/api/health` | Health check do servidor |
+| `POST` | `/api/auth/login` | Autenticação de usuário |
+| `GET` | `/api/auth/status` | Verificar status de autenticação |
+| `POST` | `/api/leads` | Cadastrar novo lead com validação |
+| `GET` | `/api/leads` | Listar leads (paginação: `pagina`, `limite`) |
+| `GET` | `/api/materias` | Listar matérias |
+| `POST` | `/api/materias` | Cadastrar matéria |
+| `DELETE` | `/api/materias` | Remover matéria |
+| `GET` | `/api/professores` | Listar professores |
+| `POST` | `/api/professores` | Cadastrar professor |
+| `DELETE` | `/api/professores` | Remover professor |
+| `GET` | `/api/salas` | Listar salas |
+| `POST` | `/api/salas` | Cadastrar sala |
+| `DELETE` | `/api/salas` | Remover sala |
+| `GET` | `/api/horarios` | Listar horários/slots |
+| `POST` | `/api/horarios` | Cadastrar horário com conflito detection |
+| `DELETE` | `/api/horarios` | Remover horário |
+| `GET` | `/api/turmas` | Listar turmas com curso |
+| `POST` | `/api/turmas` | Cadastrar turma |
+| `DELETE` | `/api/turmas` | Remover turma |
+| `GET` | `/api/turma-materia` | Listar relações turma-matéria |
+| `POST` | `/api/turma-materia` | Cadastrar relação turma-matéria |
+| `DELETE` | `/api/turma-materia` | Remover relação |
+| `GET` | `/api/horarios-alocados` | Listar alocações de horário |
+| `POST` | `/api/horarios-alocados` | Cadastrar alocação de horário |
+| `DELETE` | `/api/horarios-alocados` | Remover alocação |
+| `GET` | `/api/restricoes` | Listar restrições |
 
 ---
 
@@ -305,6 +441,7 @@ npm run dev
 
 - **Frontend:** http://localhost:5173
 - **API Health:** http://localhost:3000/api/health
+- **Documentação Automática:** http://localhost:3000/docs (Swagger UI FastAPI)
 
 ### 4. Modo Produção
 
@@ -322,13 +459,36 @@ Acesse: http://localhost:3000
 
 ---
 
-## Segurança
+## Funcionalidades Notáveis
 
-- **Sanitização XSS:** Todos os inputs passam por `html.escape`
-- **Prepared Statements:** Queries SQLite com placeholders `?`
-- **WAL Mode:** Write-Ahead Logging para leituras concorrentes
-- **Foreign Keys:** Integridade referencial com `PRAGMA foreign_keys=ON`
-- **CORS:** Controle de requisições Cross-Origin configurável via `.env`
+### Detecção de Conflitos de Horário
+O backend possui validação inteligente que impede o cadastro de horários que causariam conflitos:
+- **Conflito de professor:** Impede que o mesmo professor tenha duas aulas no mesmo dia e horário
+- **Conflito de sala:** Impede que a mesma sala seja usada por duas turmas no mesmo dia e horário
+- Retorna erro 400 com mensagem detalhada quando conflito detectado
+
+### Sistema de Autenticação por Perfil
+- Duas profiles disponíveis: `Funcionário` e `Aluno`
+- Interface diferente baseada no perfil logado
+- Funcionário tem acesso à tela de alocação de horários
+- Credenciais válidas: `admin@escola.com` / `admin123` (Funcionário)
+
+### Máscara de Telefone em Tempo Real
+- Formato `(xx) xxxxx-xxxx` aplicado automaticamente enquanto o usuário digita
+- Apenas dígitos são aceitos, formatação é adicionada dinamicamente
+- Implementada no componente `FormularioLead.jsx` com função `tratarMascaraTelefone`
+
+### Validação Completa de Dados
+- Validação rigorosa no backend via `validadores.py`
+- Sanitização XSS com `html.escape` em todos os inputs
+- Validação de formato de email, tamanho de nome, faixa de telefone
+- Mensagens de erro claras e específicas retornadas ao frontend
+
+### Interface Responsiva e Acessível
+- Layout clean com Tailwind CSS
+- Componentes modulares e reutilizáveis
+- Feedback visual imediato (Toast notifications, status indicators)
+- Filtros e buscas em tempo real
 
 ---
 

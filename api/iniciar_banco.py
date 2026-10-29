@@ -30,6 +30,7 @@ def inicializar_banco():
             id                  INTEGER PRIMARY KEY AUTOINCREMENT,
             nome_completo       TEXT    NOT NULL,
             email               TEXT    NOT NULL UNIQUE,
+            senha               TEXT    DEFAULT 'admin123',
             disciplina_favorita TEXT
         );
 
@@ -119,6 +120,16 @@ def inicializar_banco():
     ''')
 
     conexao.commit()
+
+    cursor.execute("SELECT id FROM professores WHERE email = 'admin@escola.edu'")
+    if not cursor.fetchone():
+        cursor.execute(
+            "INSERT INTO professores (nome_completo, email, senha) VALUES (?, ?, ?)",
+            ('Administrador', 'admin@escola.edu', 'admin123')
+        )
+        conexao.commit()
+        print("Usuário padrão criado: admin@escola.edu / admin123")
+
     conexao.close()
     print("Banco de dados de horário escolar criado/verificado com sucesso no SQLite (Python).")
 

@@ -1,18 +1,21 @@
-from fastapi import APIRouter, Request, Body
+from fastapi import APIRouter, Body
 from fastapi.responses import JSONResponse
+from starlette import status
 from ..config.conexao_banco import obter_conexao
-import sqlite3
 
 router = APIRouter()
-
-USUARIO_PADRAO_EMAIL = 'admin@escola.edu'
-USUARIO_PADRAO_SENHA = 'admin123'
 
 @router.post("/login")
 def login_rota(payload: dict = Body(...)):
     email = payload.get('email', '')
     senha = payload.get('senha', '')
     perfil = payload.get('perfil', '')
+
+    if not email or not senha or not perfil:
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content={'sucesso': False, 'mensagem': 'Email, senha e perfil são obrigatórios'}
+        )
 
     conexao = obter_conexao()
     try:
@@ -22,15 +25,15 @@ def login_rota(payload: dict = Body(...)):
             (email, senha)
         )
         usuario = cursor.fetchone()
-        
+
         if usuario:
             return JSONResponse(
                 status_code=status.HTTP_200_OK,
-                content={'sucesso': True, 'perfil': 'funcionario', 'nome': usuario[1]}
+                content={'sucesso': True, 'perfil': perfil, 'nome': usuario['nome_completo']}
             )
-        
+
         return JSONResponse(
-            status_code=status.HTTP_401_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             content={'sucesso': False, 'mensagem': 'Credenciais inválidas'}
         )
     finally:
@@ -38,19 +41,4 @@ def login_rota(payload: dict = Body(...)):
 
 @router.get("/status")
 def status_rota():
-    conexao = obter_conexao()
-    try:
-        # Retorna status básico - em produção haveria sessão/token
-        return {'sucesso': True, 'autenticado': True, 'perfil': 'funcionario'}
-    finally:
-        conexao.close()
-
-@router.get("/status")
-def status_rota():
-    conexao = obter_conexao()
-    try:
-        cursor = conexao.cursor()
-        # Retorna status básico - em produção haveria sessão/token
-        return {'sucesso': True, 'autenticado': True, 'perfil': 'funcionario'}
-    finally:
-        conexao.close()
+    return {'sucesso': True, 'autenticado': False, 'perfil': None}

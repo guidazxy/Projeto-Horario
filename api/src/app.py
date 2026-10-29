@@ -33,5 +33,5 @@ def health_check():
     return {"sucesso": True, "mensagem": "API de gestão de horários funcionando!"}
 
 # Registra rotas da API
-app.include_router(auth_router, prefix="/api")
+app.include_router(auth_router, prefix="/api/auth")
 app.include_router(lead_router, prefix="/api")

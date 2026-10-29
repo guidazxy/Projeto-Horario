@@ -1,29 +1,15 @@
 import React, { useState } from 'react'
 
-export default function Login() {
-  const [perfil, setPerfil] = useState<'funcionario' | 'aluno'>('')
+export default function Login({ aoFazerLogin }) {
+  const [perfil, setPerfil] = useState('')
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
-  [error, setError] = useState('')
+  const [error, setError] = useState('')
 
-  const login = async () => {
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, senha, perfil })
-      })
-      const data = await res.json()
-      if (data.sucesso) {
-        window.location.href = perfil === 'funcionario' 
-          ? '/funcionario' 
-          : '/aluno'
-      } else {
-        setError(data.mensagem || 'Login falhou')
-      }
-    } catch {
-      setError('Erro de conexão com a API')
-    }
+  const login = async (e) => {
+    e.preventDefault()
+    if (!perfil || !email || !senha) return
+    aoFazerLogin(perfil, email, senha)
   }
 
   return (
@@ -72,6 +58,7 @@ export default function Login() {
 
           <div className="grid grid-cols-2 gap-4">
             <button
+              type="button"
               onClick={() => setPerfil('funcionario')}
               className={`w-full py-3 rounded-xl ${
                 perfil === 'funcionario'
@@ -82,6 +69,7 @@ export default function Login() {
               <span>Funcionário</span>
             </button>
             <button
+              type="button"
               onClick={() => setPerfil('aluno')}
               className={`w-full py-3 rounded-xl ${
                 perfil === 'aluno'
