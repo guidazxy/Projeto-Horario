@@ -1,6 +1,8 @@
 import React from 'react'
+import { useI18n } from '../locales/I18nContext'
 
 export default function Header({ aoAbrirModalLeads }) {
+  const { translate, locale, setLocale } = useI18n()
   return (
     <>
       <header className="fixed top-0 left-0 w-full z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80 shadow-2xl">
@@ -53,6 +55,23 @@ export default function Header({ aoAbrirModalLeads }) {
                 <span>🐍 Testar API Python</span>
               </span>
             </a>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setLocale('en')}
+                className={`relative inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${locale === 'en' ? 'bg-cyan-950/80 text-cyan-300 border border-cyan-500/30' : 'bg-slate-950/80 text-slate-300 border border-slate-700/30 hover:border-slate-700'} transition`}
+                title="English"
+              >
+                🇺🇸
+              </button>
+              <button
+                onClick={() => setLocale('es')}
+                className={`relative inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${locale === 'es' ? 'bg-cyan-950/80 text-cyan-300 border border-cyan-500/30' : 'bg-slate-950/80 text-slate-300 border border-slate-700/30 hover:border-slate-700'} transition`}
+                title="Español"
+              >
+                🇪🇸
+              </button>
+            </div>
           </div>
 
         </div>

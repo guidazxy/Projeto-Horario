@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
+import { useI18n } from './locales/I18nContext'
 
 export default function App() {
   const [autenticado, setAutenticado] = useState(false);
@@ -129,7 +130,7 @@ export default function App() {
     return (
       <div style={{ background: '#0f172a', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', fontFamily: 'sans-serif', padding: '20px' }}>
         <div style={{ background: '#1e293b', padding: '30px', borderRadius: '12px', width: '100%', maxWidth: '380px', color: '#fff', border: '1px solid #334155' }}>
-          <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>⚡ Sistema Escolar</h2>
+          <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>⚡ {translate('header.title')}</h2>
           
           {alerta && <div style={{ background: '#7f1d1d', color: '#fca5a5', padding: '8px', borderRadius: '6px', marginBottom: '12px', fontSize: '13px', textAlign: 'center' }}>{alerta}</div>}
           {sucesso && <div style={{ background: '#065f46', color: '#a7f3d0', padding: '8px', borderRadius: '6px', marginBottom: '12px', fontSize: '13px', textAlign: 'center' }}>{sucesso}</div>}
@@ -166,7 +167,7 @@ export default function App() {
     <div style={{ background: '#f8fafc', minHeight: '100vh', fontFamily: 'sans-serif', padding: '20px' }}>
       <div style={{ background: '#fff', padding: '20px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
         <div>
-          <h2 style={{ margin: 0, color: '#0f172a' }}>⚡ Gestão Inteligente de Horários</h2>
+          <h2 style={{ margin: 0, color: '#0f172a' }}>⚡ {translate('header.title')}</h2>
           <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px' }}>Usuário: <strong>{email}</strong> ({perfil})</p>
         </div>
         <button onClick={() => setAutenticado(false)} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Sair</button>

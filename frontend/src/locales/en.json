@@ -1,0 +1,16 @@
+{
+  "header": {
+    "title": "School System",
+    "logo": "AcademiaStack",
+    "version": "v2.0 Full Stack",
+    "backend": "Backend in Python (FastAPI)",
+    "frontend": "Frontend in React 18"
+  },
+  "nav": {
+    "architecture": "Architecture"
+  },
+  "actions": {
+    "view_leads": "View Saved Leads"
+  },
+  "test_api": "Test Python API"
+}
