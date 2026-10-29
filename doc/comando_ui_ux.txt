@@ -1,0 +1,57 @@
+Atue como um especialista Sênior em Frontend React 18, Tailwind CSS e Design System / UI/UX.
+
+Estou desenvolvendo o "Projeto Horário — Sistema de Gestão Escolar e Leads Acadêmicos" para a disciplina de Programação Web do IFMT (Campus Barra do Garças), por Carlos Alexandre e Lara Guida.
+
+---
+
+### 🎯 OBJETIVO PRINCIPAL
+Refatorar e elevar a experiência visual (UI) e de uso (UX) do frontend em React 18 + Tailwind CSS v3, mantendo a coerência com a stack (FastAPI + SQLite) e a estética Dark Glassmorphic. O objetivo é causar um forte impacto visual na apresentação do 4º bimestre.
+
+---
+
+### 🎨 1. DIRETRIZES DE DESIGN SYSTEM & ESTÉTICA VISUAL (UI)
+
+1. **Dark Glassmorphism Avançado:**
+   - Padronizar os cartões e modais com `bg-slate-900/60`, `backdrop-blur-xl`, bordas sutis `border border-slate-800/80` e reflexos internos (`shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]`).
+   - Aplicar gradientes elegantes combinando Azul Python (`#3776AB` / `#38bdf8`) e Ciano React (`#61DAFB` / `#06b6d4`), utilizando sombras com brilho neon (`shadow-cyan-500/20 glow`).
+
+2. **Tipografia & Hierarquia:**
+   - Garantir a aplicação consistente de `Plus Jakarta Sans` para textos/títulos e `Fira Code` para amostras de código e JSON.
+   - Usar gradientes de texto para títulos principais (`bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 bg-clip-text text-transparent`).
+
+3. **Feedback Visual & Micro-interações:**
+   - Adicionar transições suaves (`transition-all duration-300 ease-out`) em todos os botões e elementos interativos.
+   - Inserir estados de Hover com elevação suave (`hover:-translate-y-0.5`), efeitos de brilho em bordas e indicadores pulso para status ativos (`relative flex h-2 w-2` com `animate-ping`).
+
+---
+
+### 🛠️ 2. MELHORIAS POR COMPONENTE (UX & REQUISITOS)
+
+- **`Header.jsx`:**
+  - Tornar a Navbar fixa/blur (`sticky top-0 z-50 backdrop-blur-md bg-slate-950/70 border-b border-slate-800/50`).
+  - Incluir a marca "AcademiStack / IFMT", status de conexão com a API em tempo real (bolinha verde pulsante para `GET /api/health`) e botão de atalho direto para abrir o `ModalLeads.jsx`.
+
+- **`Hero.jsx` & Visualizador de Código:**
+  - Melhorar o alternador de abas (Python FastAPI vs. React Hooks) com destaque ativo em neon e sintaxe destacada.
+  - Adicionar um Badge indicativo do curso ("IFMT — Terceiro Ano B 2026").
+
+- **`FormularioLead.jsx`:**
+  - Reformular os campos de input com ícones dinâmicos (`Heroicons` ou `Lucide-React`), rótulos flutuantes/superiores e estados claros de foco (`focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500`).
+  - Aplicar máscara visual e validação nativa para telefone `(99) 99999-9999`.
+  - Botão de envio com estado de carregamento acoplado (`spinner` e texto "Enviando...").
+
+- **`ModalLeads.jsx` (Inspector de Banco SQLite):**
+  - Transformar o modal em um painel/dashboard profissional com tabela interativa, suporte a busca em tempo real e paginação visual (`Anterior` / `Próxima`).
+  - Adicionar Badges coloridas de status (`novo`, `contatado`, `convertido`, `perdido`).
+  - Incluir botão de atualizar dados (Refresh) com animação de rotação no ícone.
+
+- **`Toast.jsx`:**
+  - Notificação flutuante com barra de progresso regressiva de 4 segundos e suporte aos tipos `sucesso`, `erro` e `aviso`.
+
+---
+
+### 📦 REQUISITOS DE SAÍDA DE CÓDIGO
+1. Mantenha os imports e estruturas do React 18 limpos.
+2. Não utilize dependências CSS externas além das classes utilitárias do Tailwind v3 e animações personalizadas do `index.css`.
+3. Garanta responsividade total para telas móveis (360px), tablets (768px) e desktops (1024px+).
+4. Forneça o código atualizado ou os ajustes necessários prontos para cópia e colagem nos arquivos do projeto (`frontend/src/components/...`).
