@@ -2,10 +2,14 @@ import React, { createContext, useContext, useState } from 'react';
 
 const I18nContext = createContext();
 
+import pt from '../locales/pt.json';
+import en from '../locales/en.json';
+import es from '../locales/es.json';
+
 const translations = {
-  pt: require('../locales/pt.json'),
-  en: require('../locales/en.json'),
-  es: require('../locales/es.json')
+  pt,
+  en,
+  es
 };
 
 export const I18nProvider = ({ children }) => {

@@ -1,23 +1,17 @@
 import os
 from pathlib import Path
-from fastapi import FastAPI, Request, Query
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
-from dotenv import load_dotenv
-
-# Carrega variáveis de ambiente do arquivo .env da pasta api
-caminho_env = Path(__file__).resolve().parent.parent / '.env'
-load_dotenv(dotenv_path=caminho_env)
 
 from src.rotas.auth_rotas import router as auth_router
 from src.rotas.lead_rotas import router as lead_router
+from src.rotas.professor_rotas import router as professor_router
+from src.rotas.aluno_rotas import router as aluno_router
 
 app = FastAPI(title="Sistema de Gestão de Horários Escolares - Python")
 
 # Configuração de CORS
-origem_permitida = os.getenv("ORIGEM_PERMITIDA", "*")
-origens = [origem_permitida] if origem_permitida != "*" else ["*"]
+origens = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -35,3 +29,5 @@ def health_check():
 # Registra rotas da API
 app.include_router(auth_router, prefix="/api/auth")
 app.include_router(lead_router, prefix="/api")
+app.include_router(professor_router, prefix="/api/professor")
+app.include_router(aluno_router, prefix="/api/aluno")

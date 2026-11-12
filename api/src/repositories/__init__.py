@@ -1,0 +1,3 @@
+from .base import BaseRepositorio
+from .usuario_repositorio import UsuarioRepositorio
+from .academico_repositorio import AcademicoRepositorio

@@ -1,57 +1,57 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer base {
-  body {
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  }
-  code, pre {
-    font-family: 'Fira Code', monospace;
-  }
-}
-
-/* Efeitos visuais modernos e glassmorphism */
+/* Card glassmorphism */
 .glass-card {
-  background: rgba(15, 23, 42, 0.75);
+  background: rgba(var(--bg-rgb), 0.75);
   backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.glass-card-light {
+.card-light {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
-.glow-python {
-  box-shadow: 0 0 40px -10px rgba(55, 118, 171, 0.4);
+/* Botões primários */
+.btn-primary {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  background: var(--primary);
+  color: #f8fafc;
+  border: none;
+}
+.btn-primary:hover {
+  background: var(--primary-dark);
 }
 
-.glow-react {
-  box-shadow: 0 0 40px -10px rgba(97, 218, 251, 0.4);
+/* Cards */
+.card {
+  background: rgba(var(--bg-rgb), 0.75);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.5rem;
+  padding: 1rem;
 }
 
-.glow-purple {
-  box-shadow: 0 0 40px -10px rgba(168, 85, 247, 0.4);
+.card-light {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 0.5rem;
+  padding: 1rem;
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+/* Focus styles */
+.focus-visible\:outline-none:focus-visible {
+  outline: none;
 }
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
+.focus-visible\:ring-2:focus-visible {
+  ring-width: 2px;
 }
-
-@keyframes pulseGlow {
-  0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.05); }
+.focus-visible\:ring-primary:focus-visible {
+  ring-color: var(--primary);
 }
-
-.animate-pulse-glow {
-  animation: pulseGlow 4s ease-in-out infinite;
+.focus-visible\:ring-offset-2:focus-visible {
+  ring-offset-width: 2px;
 }
