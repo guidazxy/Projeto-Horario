@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { GraduationCap } from "lucide-react";
+import { useI18n } from "../locales/I18nContext";
+import LanguageSwitcher from "./LanguageSwitcher";
 import ThemeToggle from "./ThemeToggle";
 
 export default function LoginPortal({ onAuth }) {
   const navigate = useNavigate();
+  const { translate: t } = useI18n();
   const [showCadastro, setShowCadastro] = useState(false);
   const [type, setType] = useState("professor");
   const [form, setForm] = useState({ email: "", senha: "", nome: "" });
@@ -37,17 +40,23 @@ export default function LoginPortal({ onAuth }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email, senha: form.senha, perfil: type })
       });
-      const data = await res.json();
-      if (data.sucesso) {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMensagem(res.status === 401 ? t("auth.invalidCredentials") : res.status >= 500 ? t("auth.serviceError") : t("auth.validationError"));
+        setSubmeter(false);
+        return;
+      }
+
+      if (data.sucesso && data.user) {
         localStorage.setItem("academi_token", data.token || data);
         onAuth(data.user, data.token || data);
         navigate(data.user.role === "professor" ? "/professor" : "/aluno");
       } else {
-        setMensagem(data.mensagem || "Login falhou");
+        setMensagem(t("auth.validationError"));
         setSubmeter(false);
       }
-    } catch (e) {
-      setMensagem("Erro de conexão com a API");
+    } catch {
+      setMensagem(t("auth.connectionError"));
       setSubmeter(false);
     }
   };
@@ -66,17 +75,23 @@ export default function LoginPortal({ onAuth }) {
           role: type
         })
       });
-      const data = await res.json();
-      if (data.sucesso) {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMensagem(res.status === 409 ? t("auth.emailExists") : res.status >= 500 ? t("auth.serviceError") : t("auth.registrationError"));
+        setSubmeter(false);
+        return;
+      }
+
+      if (data.sucesso && data.user) {
         localStorage.setItem("academi_token", data.token || data);
         onAuth(data.user, data.token || data);
         navigate(data.user.role === "professor" ? "/professor" : "/aluno");
       } else {
-        setMensagem(data.mensagem || "Cadastro falhou");
+        setMensagem(t("auth.registrationError"));
         setSubmeter(false);
       }
-    } catch (e) {
-      setMensagem("Erro de conexão com a API");
+    } catch {
+      setMensagem(t("auth.connectionError"));
       setSubmeter(false);
     }
   };
@@ -91,31 +106,34 @@ export default function LoginPortal({ onAuth }) {
               <span className="brand-mark"><GraduationCap aria-hidden="true" size={22} /></span>
               <div>
                 <h2 className="text-xl font-bold tracking-tight text-primary">AcademiStack</h2>
-                <p className="text-xs text-muted">Portal acadêmico</p>
+                <p className="text-xs text-muted">{t("auth.portal")}</p>
               </div>
             </div>
-            <ThemeToggle />
+            <div className="auth-controls">
+              <LanguageSwitcher />
+              <ThemeToggle />
+            </div>
           </div>
 
           <div className="mb-5">
             <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-              {showCadastro ? "Criar acesso" : "Bem-vindo de volta"}
+              {showCadastro ? t("auth.createAccess") : t("auth.welcome")}
             </p>
             <h1 className="mt-1 text-2xl font-bold text-text">
-              {showCadastro ? "Crie sua conta" : "Acesse sua conta"}
+              {showCadastro ? t("auth.createHeading") : t("auth.loginHeading")}
             </h1>
           </div>
 
           <div className="mb-5">
-            <p className="mb-1 block text-sm font-medium text-text">Perfil</p>
-            <div className="flex gap-2" role="group" aria-label="Perfil de acesso">
+            <p className="mb-1 block text-sm font-medium text-text">{t("auth.role")}</p>
+            <div className="flex gap-2" role="group" aria-label={t("auth.roleGroup")}>
               <button
                 type="button"
                 onClick={() => setType("professor")}
                 aria-pressed={type === "professor"}
                 className={`w-1/2 rounded-md py-1.5 px-2 font-medium transition-colors ${type === "professor" ? "bg-primary text-on-primary" : "text-primary hover:bg-border"}`}
               >
-                Professor
+                {t("auth.professor")}
               </button>
               <button
                 type="button"
@@ -123,7 +141,7 @@ export default function LoginPortal({ onAuth }) {
                 aria-pressed={type === "aluno"}
                 className={`w-1/2 rounded-md py-1.5 px-2 font-medium transition-colors ${type === "aluno" ? "bg-primary text-on-primary" : "text-primary hover:bg-border"}`}
               >
-                Aluno
+                {t("auth.student")}
               </button>
             </div>
           </div>
@@ -131,7 +149,7 @@ export default function LoginPortal({ onAuth }) {
           {showCadastro ? (
             <form onSubmit={cadastro} className="space-y-4">
               <div>
-                <label htmlFor="nome" className="block text-sm font-medium text-text mb-1">Nome completo</label>
+                <label htmlFor="nome" className="block text-sm font-medium text-text mb-1">{t("auth.name")}</label>
                 <input
                   type="text"
                   id="nome"
@@ -144,7 +162,7 @@ export default function LoginPortal({ onAuth }) {
                 />
               </div>
               <div>
-                <label htmlFor="cadastro-email" className="block text-sm font-medium text-text mb-1">E-mail</label>
+                <label htmlFor="cadastro-email" className="block text-sm font-medium text-text mb-1">{t("auth.email")}</label>
                 <input
                   type="email"
                   id="cadastro-email"
@@ -157,7 +175,7 @@ export default function LoginPortal({ onAuth }) {
                 />
               </div>
               <div>
-                <label htmlFor="cadastro-senha" className="block text-sm font-medium text-text mb-1">Senha</label>
+                <label htmlFor="cadastro-senha" className="block text-sm font-medium text-text mb-1">{t("auth.password")}</label>
                 <input
                   type="password"
                   id="cadastro-senha"
@@ -174,13 +192,13 @@ export default function LoginPortal({ onAuth }) {
                 className="w-full rounded-md py-2 font-medium transition-colors bg-primary text-on-primary hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 disabled={submeter}
               >
-                {submeter ? "Criando..." : "Criar conta"}
+                {submeter ? t("auth.creating") : t("auth.createAccount")}
               </button>
               </form>
             ) : (
               <form onSubmit={login} className="space-y-4">
                 <div>
-                  <label htmlFor="login-email" className="block text-sm font-medium text-text mb-1">E-mail</label>
+                  <label htmlFor="login-email" className="block text-sm font-medium text-text mb-1">{t("auth.email")}</label>
                   <input
                     type="email"
                     id="login-email"
@@ -193,7 +211,7 @@ export default function LoginPortal({ onAuth }) {
                   />
                 </div>
                 <div>
-                  <label htmlFor="login-senha" className="block text-sm font-medium text-text mb-1">Senha</label>
+                  <label htmlFor="login-senha" className="block text-sm font-medium text-text mb-1">{t("auth.password")}</label>
                   <input
                     type="password"
                     id="login-senha"
@@ -210,13 +228,13 @@ export default function LoginPortal({ onAuth }) {
                   className="w-full rounded-md py-2 font-medium transition-colors bg-primary text-on-primary hover:bg-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                   disabled={submeter}
                 >
-                  {submeter ? "Entrando..." : "Entrar"}
+                  {submeter ? t("auth.signingIn") : t("auth.signIn")}
                 </button>
               </form>
             )}
             {mensagem && <p className="mt-4 text-sm text-danger" role="alert">{mensagem}</p>}
             <p className="mt-5 text-center text-sm text-muted">
-              {showCadastro ? "Já possui acesso?" : "Ainda não tem uma conta?"}{" "}
+              {showCadastro ? t("auth.alreadyAccount") : t("auth.newAccount")}{" "}
               <button
                 type="button"
                 className="font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -225,7 +243,7 @@ export default function LoginPortal({ onAuth }) {
                   setMensagem("");
                 }}
               >
-                {showCadastro ? "Entrar" : "Criar conta"}
+                {showCadastro ? t("auth.signIn") : t("auth.createAccount")}
               </button>
             </p>
           </div>

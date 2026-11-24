@@ -25,9 +25,15 @@ def login(payload: dict = Body(...)):
         usuario = cursor.fetchone()
 
         if usuario and verificar_senha(senha, usuario['senha_hash']):
-            # Criar sessão
             token = secrets.token_hex(32)
-            cursor.execute("INSERT INTO sessoes (token, usuario_id, expira_em) VALUES (?, ?, datetime('now', '+8 hours'))", (token, usuario['id']))
+            cursor.execute("""
+                INSERT INTO sessoes (token, usuario_id, expira_em)
+                VALUES (?, ?, datetime('now', '+8 hours'))
+                ON CONFLICT(usuario_id) DO UPDATE SET
+                    token = excluded.token,
+                    criado_em = datetime('now', 'localtime'),
+                    expira_em = excluded.expira_em
+            """, (token, usuario['id']))
             conexao.commit()
             return {"sucesso": True, "token": token, "user": {"id": usuario['id'], "nome": usuario['nome_completo'], "email": usuario['email'], "role": usuario['role']}}
         else:
@@ -84,7 +90,16 @@ def me(credentials: str = ...):  # simplificado
     conexao = obter_conexao()
     try:
         cursor = conexao.cursor()
-        cursor.execute("SELECT id, nome_completo, email, role, ativo FROM usuarios WHERE id = (SELECT usuario_id FROM sessoes WHERE token = ?)", (token,))
+        cursor.execute("""
+            SELECT id, nome_completo, email, role, ativo
+            FROM usuarios
+            WHERE ativo = 1
+              AND id = (
+                  SELECT usuario_id
+                  FROM sessoes
+                  WHERE token = ? AND datetime(expira_em) > datetime('now')
+              )
+        """, (token,))
         row = cursor.fetchone()
         if row:
             return {"sucesso": True, "user": {"id": row['id'], "nome": row['nome_completo'], "email": row['email'], "role": row['role']}}
