@@ -12,14 +12,36 @@ export const ThemeProvider = ({ children }) => {
     const html = document.documentElement;
     if (isDark) {
       html.classList.add("dark");
-      localStorage.setItem("theme", "dark");
     } else {
       html.classList.remove("dark");
-      localStorage.setItem("theme", "light");
     }
+    html.style.colorScheme = isDark ? "dark" : "light";
   }, [isDark]);
 
-  const toggleTheme = () => setIsDark((prev) => !prev);
+  useEffect(() => {
+    if (localStorage.getItem("theme")) return undefined;
 
-  return children;
+    const preference = window.matchMedia("(prefers-color-scheme: dark)");
+    const updateTheme = (event) => setIsDark(event.matches);
+    preference.addEventListener("change", updateTheme);
+    return () => preference.removeEventListener("change", updateTheme);
+  }, []);
+
+  const toggleTheme = () => {
+    setIsDark((previous) => {
+      const next = !previous;
+      localStorage.setItem("theme", next ? "dark" : "light");
+      return next;
+    });
+  };
+
+  return (
+    <ThemeContext.Provider value={{ isDark, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
 };
+
+export default ThemeProvider;
+
+export const useTheme = () => useContext(ThemeContext);

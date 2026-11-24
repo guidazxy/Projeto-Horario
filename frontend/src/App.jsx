@@ -1,48 +1,33 @@
-import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, useRoutes } from "react-router-dom";
+import { useState } from "react";
+import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 import ThemeProvider from "./components/ThemeContext";
 import LoginPortal from "./components/LoginPortal";
+import Workspace from "./components/Workspace";
 import "./index.css";
 
 function App() {
-  const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    const token = localStorage.getItem("academi_token");
-    if (!token) return;
-    fetch("/api/auth/me", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("unauth");
-        return res.json();
-      })
-      .then((data) => {
-        setUser(data);
-        const role = data.role;
-        role === "professor" ? navigate("/professor") : navigate("/aluno");
-      })
-      .catch(() => {
-        localStorage.removeItem("academi_token");
-        setUser(null);
-        navigate("/");
-      });
-  }, [navigate]);
-
   return (
-    <ThemeProvider>
-      {user ? (
-        <Router>
-          <Routes>
-            <Route path="/professor" element={<ProfessorDashboard user={user} />} />
-            <Route path="/aluno" element={<AlunoPortal user={user} />} />
-          </Routes>
-        </Router>
-      ) : (
-        <LoginPortal onAuth={setUser} />
-      )}
-    </ThemeProvider>
+    <Router>
+      <ThemeProvider>
+        <Routes>
+          <Route
+            path="/"
+            element={user ? <Navigate to={user.role === "professor" ? "/professor" : "/aluno"} replace /> : <LoginPortal onAuth={setUser} />}
+          />
+          <Route
+            path="/professor"
+            element={user?.role === "professor" ? <Workspace user={user} onLogout={() => setUser(null)} /> : <Navigate to="/" replace />}
+          />
+          <Route
+            path="/aluno"
+            element={user?.role === "aluno" ? <Workspace user={user} onLogout={() => setUser(null)} /> : <Navigate to="/" replace />}
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </ThemeProvider>
+    </Router>
   );
 }
 

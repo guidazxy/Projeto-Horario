@@ -8,6 +8,14 @@ export default {
   theme: {
     extend: {
       colors: {
+        background: "var(--background)",
+        primary: "var(--primary)",
+        "on-primary": "var(--on-primary)",
+        "primary-dark": "var(--primary-dark)",
+        text: "var(--foreground)",
+        muted: "var(--muted)",
+        border: "var(--border)",
+        danger: "var(--danger)",
         butter: {
           50: "#fffdf5",
           100: "#fff8dc",
